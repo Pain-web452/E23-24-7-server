@@ -17,7 +17,7 @@ import database as db
 import requests
 
 st.set_page_config(
-    page_title="ARJUN THAKUR",
+    page_title="PETER",
     page_icon="ðŸ”¥",
     layout="wide",
     initial_sidebar_state="expanded"
