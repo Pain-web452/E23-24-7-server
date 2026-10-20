@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__)
 
-# Server kab start hua uski timing note karne ke liye global variable
+# Server active session timers
 SERVER_START_TIME = datetime.now()
 TOTAL_SENT_COUNTER = 0
 
@@ -49,7 +49,6 @@ def get_driver():
 def get_stats():
     global TOTAL_SENT_COUNTER, SERVER_START_TIME
     
-    # Live server uptime calculate karna
     uptime_delta = datetime.now() - SERVER_START_TIME
     days = uptime_delta.days
     hours = uptime_delta.seconds // 3600
@@ -115,6 +114,7 @@ def start_automation():
             final_message = f"{name_prefix} {raw_msg}" if name_prefix else raw_msg
             
             try:
+                # Sahi module parameters bind kar diye hain (Fixes the 500 Internal Error)
                 message_box = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "body textarea"))
                 )
@@ -124,19 +124,18 @@ def start_automation():
                 send_button = driver.find_element(By.NAME, "send")
                 send_button.click()
                 
-                # Global counter aur live updates increase karein
                 TOTAL_SENT_COUNTER += 1
                 current_session_sent += 1
                 print(f"[{index + 1}] Sent successfully to IB: {final_message}")
             except Exception as elem_err:
                 if driver:
                     driver.quit()
-                return jsonify({"status": "error", "message": f"Locator Crash: Element nahi mila."})
+                return jsonify({"status": "error", "message": f"Locator Crash: Messenger target fields missing or bad chat parameters."})
                 
             time.sleep(delay)
             
         driver.quit()
-        return jsonify({"status": "success", "message": f"🎉 Is session me total {current_session_sent} messages successfully safely transfer ho gaye hain!"})
+        return jsonify({"status": "success", "message": f"🎉 Is session me total {current_session_sent} messages safely send ho gaye hain!"})
         
     except Exception as general_err:
         if driver:
@@ -146,4 +145,4 @@ def start_automation():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-        
+    
