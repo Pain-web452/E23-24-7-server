@@ -5,7 +5,7 @@ set -o errexit
 # Install python dependencies from requirements
 pip install -r requirements.txt
 
-# Dynamic container validation storage parameters path binding
+# Dynamic container storage parameters path binding
 STORAGE_DIR=/opt/render/project/.render
 
 if [ ! -d "$STORAGE_DIR/chrome" ]; then
@@ -21,9 +21,11 @@ else
 fi
 
 if [ ! -d "$STORAGE_DIR/chromedriver" ]; then
-  echo "...Downloading Chromedriver matching instance version"
+  echo "...Downloading Chromedriver stable production instance"
   mkdir -p $STORAGE_DIR/chromedriver
   cd $STORAGE_DIR/chromedriver
+  
+  # Naya working stable URL (Jo crash nahi hoga)
   wget https://googleapis.com
   unzip chromedriver-linux64.zip
   mv chromedriver-linux64/chromedriver .
