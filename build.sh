@@ -2,36 +2,39 @@
 # exit on error
 set -o errexit
 
-# Project ke core directory path ko secure karna
 PROJECT_ROOT=$(pwd)
 
-# Python dependencies install karein
+# Dependencies install karein
 pip install -r requirements.txt
 
-# Chrome aur Chromedriver install karne ka sahi path
 STORAGE_DIR=/opt/render/project/.render
+mkdir -p $STORAGE_DIR/chrome
+mkdir -p $STORAGE_DIR/chromedriver
 
-if [ ! -d "$STORAGE_DIR/chrome" ]; then
-  echo "...Downloading Google Chrome Stable Binary"
-  mkdir -p $STORAGE_DIR/chrome
-  cd $STORAGE_DIR/chrome
-  wget -O google-chrome-stable_current_amd64.deb https://google.com
-  dpkg -x google-chrome-stable_current_amd64.deb .
-  rm google-chrome-stable_current_amd64.deb
-  cd $PROJECT_ROOT
-else
-  echo "...Using cached Chrome context"
-fi
+# 1. GOOGLE CHROME INSTALLATION WITH CACHE BYPASS
+echo "...Downloading Stable Linux Google Chrome"
+cd $STORAGE_DIR/chrome
 
-if [ ! -d "$STORAGE_DIR/chromedriver" ]; then
-  echo "...Downloading Chromedriver Stable Version"
-  mkdir -p $STORAGE_DIR/chromedriver
-  cd $STORAGE_DIR/chromedriver
-  wget https://googleapis.com
-  unzip chromedriver-linux64.zip
-  mv chromedriver-linux64/chromedriver .
-  rm -r chromedriver-linux64 chromedriver-linux64.zip
-  cd $PROJECT_ROOT
-else
-  echo "...Using cached Chromedriver maps"
-fi
+# Agar koi purani corrupt file padi ho toh use delete karna
+rm -f google-chrome-stable_current_amd64.deb index.html
+
+# Direct original static mirror URL framework integration
+wget --no-cache -O google-chrome-stable_current_amd64.deb https://google.com
+
+dpkg -x google-chrome-stable_current_amd64.deb .
+rm -f google-chrome-stable_current_amd64.deb
+cd $PROJECT_ROOT
+
+# 2. CHROMEDRIVER INSTALLATION
+echo "...Downloading Chromedriver Stable Version"
+cd $STORAGE_DIR/chromedriver
+
+rm -rf chromedriver-linux64 chromedriver-linux64.zip chromedriver
+
+wget --no-cache https://googleapis.com
+unzip chromedriver-linux64.zip
+mv chromedriver-linux64/chromedriver .
+rm -rf chromedriver-linux64 chromedriver-linux64.zip
+cd $PROJECT_ROOT
+
+echo "Build Script Finished Successfully!"
