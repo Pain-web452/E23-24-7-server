@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger Bot Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .wrapper { background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 100%; max-width: 480px; }
+        h2 { text-align: center; color: #1877f2; margin-top: 0; }
+        
+        /* Stats Console Box Design */
+        .stats-container { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
+        .stat-card { background: #f5f6f7; border: 1px solid #ccd0d5; border-radius: 6px; padding: 10px; flex: 1; text-align: center; }
+        .stat-card .title { font-size: 11px; text-transform: uppercase; color: #606770; font-weight: bold; }
+        .stat-card .value { font-size: 16px; font-weight: bold; color: #1c1e21; margin-top: 5px; }
+        
+        label { font-weight: bold; font-size: 13px; color: #606770; display: block; margin-top: 15px; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 6px; box-sizing: border-box; font-size: 14px; background-color: #f5f6f7; }
+        input:focus, textarea:focus { border-color: #1877f2; background-color: #fff; outline: none; }
+        textarea { height: 75px; resize: vertical; }
+        button { width: 100%; background-color: #1877f2; color: #fff; border: none; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background-color 0.2s; }
+        button:hover { background-color: #166fe5; }
+        #logBox { margin-top: 20px; padding: 12px; border-radius: 6px; display: none; text-align: center; font-size: 14px; font-weight: bold; }
+        .pending { background-color: #e7f3ff; color: #1877f2; border: 1px solid #1877f2; }
+        .done { background-color: #e2f6ed; color: #198754; border: 1px solid #198754; }
+        .fail { background-color: #ffebe9; color: #dc3545; border: 1px solid #dc3545; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h2>⚙️ Messenger Automation Control</h2>
+    
+    <!-- Live Status Console Window -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="title">⏱️ Server Active Uptime</div>
+            <div id="serverUptime" class="value">0 Din, 0 Ghante, 0 Minute</div>
+        </div>
+        <div class="stat-card">
+            <div class="title">📨 Total Sent Inbox</div>
+            <div id="messagesSent" class="value">0 Messages</div>
+        </div>
+    </div>
+
+    <form id="botForm">
+        <label>CHAT/CONVERSATION ID</label>
+        <input type="text" name="chat_id" placeholder="e.g., 1362400298935018" required>
+
+        <label>NAME PREFIX (OPTIONAL)</label>
+        <input type="text" name="name_prefix" placeholder="e.g., [Ashiq Raj]">
+
+        <label>DELAY (SECONDS BETWEEN EACH IB MESSAGE)</label>
+        <input type="number" name="delay" value="30" min="5" required>
+
+        <label>FACEBOOK COOKIES (JSON ARRAY FORMAT)</label>
+        <textarea name="cookies" placeholder='[{"name": "c_user", "value": "1000..."}, {"name": "xs", "value": "..."}]'></textarea>
+
+        <label>MESSAGES (ONE PER LINE)</label>
+        <textarea name="messages" placeholder="Hello Bro&#10;How are you?&#10;Welcome to automation" required></textarea>
+
+        <button type="submit">🚀 EXECUTE MESSENGER SERVICE</button>
+    </form>
+
+    <div id="logBox"></div>
+</div>
+
+<script>
+    // Live Server Stats Updater Function (Har 5 second me auto update hoga)
+    function updateLiveStats() {
+        fetch('/api/stats')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('serverUptime').innerText = data.uptime;
+            document.getElementById('messagesSent').innerText = data.total_sent + " Messages";
+        })
+        .catch(err => console.log("Stats error ignored."));
+    }
+    
+    // Auto Trigger interval
+    setInterval(updateLiveStats, 5000);
+    window.onload = updateLiveStats; // Page khulte hi fetch karein
+
+    document.getElementById('botForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const logBox = document.getElementById('logBox');
+        logBox.style.display = 'block';
+        logBox.className = 'pending';
+        logBox.innerText = 'Selenium Bot initialized on Cloud Server... Process Running. Don\'t close the tab.';
+
+        const payload = new FormData(this);
+
+        fetch('/start-automation', {
+            method: 'POST',
+            body: payload
+        })
+        .then(res => res.json())
+        .then(output => {
+            logBox.className = output.status === 'success' ? 'done' : 'fail';
+            logBox.innerText = output.message;
+            updateLiveStats(); // Task complete hone par counter instantly refresh hoga
+        })
+        .catch(err => {
+            logBox.className = 'fail';
+            logBox.innerText = 'Server Timeout or Connection Interrupted. Check Render Dashboard Logs.';
+        });
+    });
+</script>
+</body>
+</html>
